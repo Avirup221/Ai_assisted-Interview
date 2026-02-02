@@ -1,0 +1,9 @@
+faster-whisper
+sounddevice
+pyaudio
+keyboard
+aiohttp
+pyttsx3
+requests
+numpy
+pypdf
