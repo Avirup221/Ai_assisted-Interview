@@ -2,7 +2,7 @@ import os
 import aiohttp
 
 # PASTE YOUR KEY HERE IF ENV VARS FAIL
-GROQ_API_KEY = os.getenv("GROQ_API_KEY") or "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" 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") or "groq_api_key" 
 
 class InterviewManager:
     def __init__(self, resume_text):
