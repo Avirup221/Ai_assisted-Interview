@@ -98,9 +98,34 @@ def select_file_dialog():
     root.destroy()
     return file_path
 
+def select_difficulty():
+    """Allows user to select interview difficulty level."""
+    print("\n" + "="*50)
+    print("   SELECT INTERVIEW DIFFICULTY LEVEL")
+    print("="*50)
+    print("\n1️⃣  BEGINNER      - Basic foundational questions")
+    print("2️⃣  INTERMEDIATE  - Standard technical questions (Recommended)")
+    print("3️⃣  ADVANCED      - Challenging expert-level questions")
+    print("\n" + "-"*50)
+    
+    while True:
+        choice = input("Select difficulty (1/2/3): ").strip()
+        if choice == "1":
+            return "beginner"
+        elif choice == "2":
+            return "intermediate"
+        elif choice == "3":
+            return "advanced"
+        else:
+            print("❌ Invalid choice. Please enter 1, 2, or 3.")
+
 async def main():
     # 1. Setup Phase
     audio = AudioHandler()
+    
+    # Select Difficulty Level
+    difficulty = select_difficulty()
+    print(f"\n📊 Difficulty Set: {difficulty.upper()}")
     
     # Open File Dialog
     print("\n" + "="*50)
@@ -119,11 +144,12 @@ async def main():
             print("❌ Could not read text from file. Using generic mode.")
             resume_text = "No resume context."
 
-    # Initialize AI Interviewer
-    interviewer = InterviewManager(resume_text)
+    # Initialize AI Interviewer with difficulty level
+    interviewer = InterviewManager(resume_text, difficulty=difficulty)
     
     # 2. Start the Interview
     print("\n🚀 Starting Interview... (AI is reading your resume...)")
+    print(f"📊 Level: {difficulty.upper()}")
     
     # Send "start" trigger
     first_question = await interviewer.get_next_question("The interview is starting now.")
@@ -161,7 +187,7 @@ async def main():
                     feedback = await interviewer.get_final_feedback()
                     
                     print("\n" + "="*60)
-                    print("FINAL FEEDBACK REPORT")
+                    print(f"FINAL FEEDBACK REPORT ({difficulty.upper()} Level)")
                     print("="*60)
                     print(feedback)
                     
