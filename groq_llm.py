@@ -5,8 +5,19 @@ import aiohttp
 GROQ_API_KEY = os.getenv("GROQ_API_KEY") or "groq_api_key" 
 
 class InterviewManager:
-    def __init__(self, resume_text):
+    def __init__(self, resume_text, difficulty="intermediate"):
         self.api_key = GROQ_API_KEY
+        self.difficulty = difficulty.lower()
+        
+        # Difficulty-specific instructions
+        difficulty_prompts = {
+            "beginner": "Ask foundational and easy questions about basic concepts. Focus on understanding the candidate's basic knowledge.",
+            "intermediate": "Ask moderately challenging questions that test practical knowledge and problem-solving skills.",
+            "advanced": "Ask very challenging questions that test deep expertise, system design, edge cases, and advanced problem-solving abilities."
+        }
+        
+        difficulty_instruction = difficulty_prompts.get(self.difficulty, difficulty_prompts["intermediate"])
+        
         self.history = [
             {
                 "role": "system", 
@@ -14,14 +25,18 @@ class InterviewManager:
                 You are an expert technical interviewer. 
                 You have the candidate's resume below. 
                 
+                DIFFICULTY LEVEL: {self.difficulty.upper()}
+                {difficulty_instruction}
+                
                 RESUME CONTEXT:
                 {resume_text}
                 
                 YOUR GOAL:
-                1. Ask relevant, challenging questions based on the resume and the candidate's previous answers.
-                2. Do NOT provide feedback yet. Just ask the next question.
-                3. Keep questions concise (1-2 sentences).
-                4. If the user says "Please repeat the question", then ask the question again.
+                1. Ask relevant questions based on the resume and the candidate's previous answers.
+                2. Adjust question complexity based on the difficulty level specified above.
+                3. Do NOT provide feedback yet. Just ask the next question.
+                4. Keep questions concise (1-2 sentences).
+                5. If the user says "Please repeat the question", then ask the question again.
                 """
             }
         ]
@@ -68,9 +83,18 @@ class InterviewManager:
     async def get_final_feedback(self):
         # Create a temporary prompt for feedback without messing up the main history too much
         feedback_prompt = list(self.history)
+        
+        difficulty_feedback_prompts = {
+            "beginner": "Provide constructive feedback on their understanding of basic concepts. Mention what they did well and areas for improvement in foundational knowledge.",
+            "intermediate": "Provide detailed feedback on their technical knowledge, problem-solving approach, and communication skills. Mention strengths and areas for improvement.",
+            "advanced": "Provide expert-level feedback on their deep technical expertise, architectural thinking, edge case handling, and advanced problem-solving abilities. Mention standout performances and areas to strengthen."
+        }
+        
+        feedback_instruction = difficulty_feedback_prompts.get(self.difficulty, difficulty_feedback_prompts["intermediate"])
+        
         feedback_prompt.append({
             "role": "system", 
-            "content": "The interview is over. Provide detailed feedback on the candidate's performance. Mention strengths, weaknesses, and clarity of speech. Be constructive."
+            "content": f"The interview ({self.difficulty.upper()} level) is over. {feedback_instruction}"
         })
         
         feedback = await self._call_groq(feedback_prompt, max_tokens=600)
